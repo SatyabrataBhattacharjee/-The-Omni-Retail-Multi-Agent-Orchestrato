@@ -1,62 +1,99 @@
-# Omni-Retail Multi-Agent Orchestrator (LangGraph + SQL)
+# 🧠 Omni-Retail Multi-Agent Orchestrator  
+### LangGraph · SQL Agents · LLM-Driven Planning
 
-A hierarchical, agentic orchestration system that unifies customer support across multiple siloed enterprise databases using LangGraph, deterministic SQL agents, and an LLM-based planner.
+> A production-style **hierarchical multi-agent system** that unifies siloed e-commerce databases using **LangGraph orchestration**, **deterministic SQL agents**, and an **LLM-based planner**.
 
-This project demonstrates how complex, multi-domain customer queries can be resolved by coordinating independent, database-isolated agents under a single intelligent orchestrator.
+---
 
-🚀 Problem Statement
+## ✨ Overview
 
 Large e-commerce platforms often operate multiple isolated systems:
 
-Orders & products
+- 🛒 Orders & products  
+- 🚚 Logistics & delivery tracking  
+- 💳 Payments & transactions  
+- 🎧 Customer support & tickets  
 
-Logistics & shipment tracking
+This project builds a **Super Agent** capable of answering **cross-domain customer queries** by orchestrating multiple **database-isolated agents** in real time.
 
-Payments & refunds
+---
 
-Customer support & tickets
+## 🧩 Core Principle
 
-Customer support agents usually cannot see across these silos, making it difficult to answer real-world questions like:
+> **LLMs plan. Deterministic agents execute. LangGraph orchestrates.**
 
-“I ordered a product last week, it hasn’t arrived, I paid already, and I opened a support ticket. What’s the current status?”
+- LLMs are used **only for planning**
+- SQL execution is **fully deterministic**
+- Each agent owns **exactly one database**
+- No cross-database access
+- Dependencies are enforced via state
 
-This project solves that problem using an agentic architecture.
+---
 
-🧠 Solution Overview
+## 🏗️ Architecture
 
-The system is built as a Hierarchical Multi-Agent System:
+User Query
+↓
+Planner (LLM)
+↓
+Execution Plan (JSON)
+↓
+LangGraph Orchestrator
+├── ShopCore Agent
+├── ShipStream Agent
+├── PayGuard Agent
+└── CareDesk Agent
+↓
+Synthesizer
+↓
+Final Response
 
-🔹 One Orchestrator (Planner)
 
-Interprets natural-language user queries
 
-Generates a structured execution plan
+---
 
-Decides which agents to invoke and in what order
+## 🤖 Agents
 
-Uses an LLM only for planning, not execution
-
-🔹 Four Specialized Sub-Agents (Workers)
+| Agent | Responsibility | Database |
+|------|---------------|----------|
+| **ShopCore** | Orders, users, products | DB_ShopCore |
+| **ShipStream** | Shipments, warehouses, tracking | DB_ShipStream |
+| **PayGuard** | Payments, wallets, transactions | DB_PayGuard |
+| **CareDesk** | Support tickets & messages | DB_CareDesk |
 
 Each agent:
+- Executes **parameterized SQL**
+- Has **no knowledge of other systems**
+- Is independently testable
 
-Owns exactly one database
+---
 
-Executes deterministic SQL
+## 🧠 Planner (LLM Role)
 
-Cannot access other databases
+The planner converts natural language into a **strict execution plan**.
 
-Agent	Responsibility	Database
-ShopCore	Orders, users, products	DB_ShopCore
-ShipStream	Shipments, warehouses, tracking	DB_ShipStream
-PayGuard	Payments, wallets, transactions	DB_PayGuard
-CareDesk	Support tickets & messages	DB_CareDesk
-🔹 LangGraph Orchestration
+### Example User Query
 
-Each agent is a LangGraph node
 
-Shared state flows through the graph
+### Planner Output (Strict JSON)
 
-Dependencies (OrderID, UserID) are enforced automatically
+```json
+[
+  {
+    "agent": "ShopCore",
+    "task": {
+      "intent": "find_order_by_product_name",
+      "entities": {
+        "product_name": "Gaming Monitor"
+      }
+    }
+  },
+  { "agent": "ShipStream", "depends_on": "OrderID" },
+  { "agent": "PayGuard", "depends_on": "OrderID" },
+  { "agent": "CareDesk", "depends_on": "UserID" }
+]
 
-No manual orchestration logic
+
+Your order is at Bangalore Warehouse.
+Payment of ₹24999.0 was processed successfully.
+Your support ticket about 'Delivery Delay' is being handled.
